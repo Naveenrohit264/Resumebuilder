@@ -40,15 +40,15 @@ const ResumeBuilder = () => {
 
   const handleDownloadPDF = async () => {
     if (!previewRef.current) return;
-
+  
     setIsDownloading(true);
     try {
       const html2pdf = (await import('html2pdf.js')).default;
       const element = previewRef.current;
-      const fileName = resume.personalInfo?.name 
-        ? `${resume.personalInfo.name.replace(/\s+/g, '_')}_resume.pdf`
+      const fileName = resume.personalInfo?.fullName 
+        ? `${resume.personalInfo.fullName.replace(/\s+/g, '_')}_resume.pdf`
         : 'resume.pdf';
-
+  
       const opt = {
         margin: 1,
         filename: fileName,
@@ -56,14 +56,34 @@ const ResumeBuilder = () => {
         html2canvas: { scale: 2 },
         jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
       };
-
+  
       await html2pdf().set(opt).from(element).save();
+  
+      // Reset resume state and clear localStorage
+      updateResume({
+        personalInfo: {
+          fullName: '',
+          email: '',
+          phone: '',
+          location: '',
+          title: '',
+          summary: '',
+          declaration: 'I hereby declare that all the information provided above is true to the best of my knowledge.',
+        },
+        education: [],
+        experience: [],
+        projects: [],
+        skills: [],
+      });
+  
+      localStorage.removeItem('resume'); // Clear local storage
+  
     } catch (error) {
       console.error('Error generating PDF:', error);
     }
     setIsDownloading(false);
   };
-
+  
   const tabs = [
     { id: 'personal', label: 'Personal Info' },
     { id: 'experience', label: 'Experience' },
